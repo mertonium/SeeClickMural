@@ -94,7 +94,7 @@ $(function(){
             });
         } else if(dataset === 'graffiti') {
             $.ajax({
-                url: 'http://seeclickfix.com/philadelphia/issues?end_date=Any&format=json&num_results=1000&page=1&search=graffiti&sort=issues.created_at&start_date=Any&status%5BAcknowledged%5D=true&status%5BArchived%5D=true&status%5BClosed%5D=true&status%5BOpen%5D=true',
+                url: 'http://seeclickfix.com/philadelphia/issues?end_date=Any&format=json&num_results=500&page=1&search=graffiti&sort=issues.created_at&start_date=Any&status%5BAcknowledged%5D=true&status%5BArchived%5D=true&status%5BClosed%5D=true&status%5BOpen%5D=true&at=philadelphia+pa',
                 dataType: 'jsonp',
                 success: function(data) {
                     var geoJsonData = {
