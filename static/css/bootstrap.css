@@ -1234,7 +1234,7 @@ table .headerSortUp.purple, table .headerSortDown.purple {
   z-index: 10000;
   overflow: visible;
 }
-.topbar a {
+.topbar a, .tobar span {
   color: #bfbfbf;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 }

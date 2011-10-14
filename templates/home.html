@@ -7,7 +7,9 @@ $(function(){
     var config = {
         mapCenterLat:39.9522783,
         mapCenterLng:-75.1636505,
-        mapStartZoom:14
+        mapStartZoom:14,
+        graffitiColor: '#F50C46',
+        muralColor: '#5CDB12'
     }
     var featuresCache = {};
 
@@ -38,8 +40,7 @@ $(function(){
         var cssObj, randColor;
         for (var i = 0; i < e.features.length; i++) {
           var feature = e.features[i];
-          console.log(feature.data);
-          randColor = (feature.data.properties.summary) ? '#FF0066': '#FEFF99'; //randomColor();
+          randColor = (feature.data.properties.summary) ? config.graffitiColor : config.muralColor; //randomColor();
           if( feature.data.geometry.type == 'LineString' || feature.data.geometry.type == 'MultiLineString' ) {
             cssObj = {
               fill: 'none',
