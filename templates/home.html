@@ -2,8 +2,150 @@
 
 
 {% block js %}
+<script>
+$(function(){
+    var config = {
+        mapCenterLat:39.9522783,
+        mapCenterLng:-75.1636505,
+        mapStartZoom:14
+    }
+    var featuresCache = {};
+
+    var po = org.polymaps;
+
+    var map = po.map()
+        .container(document.getElementById("map").appendChild(po.svg("svg")))
+        .center({lat: config.mapCenterLat, lon: config.mapCenterLng})
+        .zoom(config.mapStartZoom)
+        .add(po.interact())
+        .add(po.hash());
+
+    map.add(po.image()
+        .url(po.url("http://{S}tile.cloudmade.com"
+        + "/6ad7016c17434f3bb906e353aa8a669e" // http://cloudmade.com/register
+        + "/998/256/{Z}/{X}/{Y}.png")
+        .hosts(["a.", "b.", "c.", ""])));
+
+    map.add(po.compass()
+        .pan("none"));
+        
+    function randomColor(colors) {
+        var sick_neon_colors = ["#CB3301", "#FF0066", "#FF6666", "#FEFF99", "#FFFF67", "#CCFF66", "#99FE00", "#EC8EED", "#FF99CB", "#FE349A", "#CC99FE", "#6599FF", "#03CDFF"];
+        return sick_neon_colors[Math.floor(Math.random()*sick_neon_colors.length)];
+    };
+
+    function load(e){
+        var cssObj, randColor;
+        for (var i = 0; i < e.features.length; i++) {
+          var feature = e.features[i];
+          console.log(feature.data);
+          randColor = (feature.data.properties.summary) ? '#FF0066': '#FEFF99'; //randomColor();
+          if( feature.data.geometry.type == 'LineString' || feature.data.geometry.type == 'MultiLineString' ) {
+            cssObj = {
+              fill: 'none',
+              stroke: randColor,
+              strokeWidth:2,
+              opacity: .9
+            }
+          } else if( feature.data.geometry.type == 'Point' ) {
+            cssObj = {
+              fill: randColor,
+              opacity: 1
+            }
+    	  } else {
+            cssObj = {
+              fill: randColor,
+              opacity: .2
+            }
+          }
+          $( feature.element )
+            .css( cssObj )
+        }
+
+        var counts = {};
+        $.each(e.features, function( i, feature) {
+          var type = this.data.geometry.type.toLowerCase(),
+              el = this.element,
+              $el   = $(el),
+              $cir  = $(el.firstChild),
+              text  = po.svg('text'),
+              props = $.extend(this.data.properties, {content: 'sadasd'}),
+              check = $('span.check[data-code=' + props.code + ']'),
+              inact = check.hasClass('inactive');
+          if(!counts[props.code]) {
+            counts[props.code] = 0
+          }
+          counts[props.code]++
+//          $el.bind('click', {props: props, geo: this.data.geometry}, onPointClick)
+          text.setAttribute("text-anchor", "middle")
+          text.setAttribute("dy", ".35em")
+          text.appendChild(document.createTextNode(props.code))
+          el.appendChild(text)
+        })
+    }
+
+    function fetchFeatures(dataset, callback) {
+        if(dataset === 'murals') {
+            $.ajax({
+                url: 'http://x.ic.ht/murals/_design/geo/_spatiallist/geojson/full?bbox=-180,-90,180,90',
+                dataType: 'jsonp',
+                success: callback
+            });
+        } else if(dataset === 'graffiti') {
+            $.ajax({
+                url: 'http://seeclickfix.com/philadelphia/issues?end_date=Any&format=json&num_results=500&page=1&search=graffiti&sort=issues.created_at&start_date=Any&status%5BAcknowledged%5D=true&status%5BArchived%5D=true&status%5BClosed%5D=true&status%5BOpen%5D=true',
+                dataType: 'jsonp',
+                success: function(data) {
+                    var geoJsonData = {
+                        type: "FeatureCollection",
+                        features : []
+                    };
+
+                    $.each(data, function(i, d) {
+                       d.graffiti = true;
+                       var feature = {
+                           type : "Feature",
+                           geometry : {
+                               type: "Point",
+                               coordinates: [
+                                    d.lng,
+                                    d.lat
+                               ]
+                           },
+                           properties :  d
+                       };
+                       geoJsonData.features.push(feature);
+                    });
+                    //console.log(geoJsonData);
+                    callback(geoJsonData);
+                }
+            });
+        }
+    }
+
+    var showDataset = function( dataset ) {
+        //showLoader();
+        fetchFeatures( dataset, function( data ){
+            //console.log(JSON.stringify(data));
+            var feature = po.geoJson()
+                .features( data.features )
+                .on( "show", load );
+
+            featuresCache[dataset] = feature;
+
+            map.add( feature );
+            //hideLoader();
+        })
+    }
+
+    showDataset('graffiti');
+    showDataset('murals');
+
+});
+</script>
 {% endblock %}
 
 
 {% block main %}
+<div id="map"></div>
 {% endblock %}
